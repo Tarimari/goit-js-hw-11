@@ -1,6 +1,6 @@
 import iziToast from "izitoast";
 import "izitoast/dist/css/iziToast.min.css";
-import { createLogger } from "vite";
+// import { createLogger } from "vite";
 
 const form = document.querySelector(`.submit-form`);
 form.addEventListener(`submit`, searchRequest);
