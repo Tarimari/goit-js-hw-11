@@ -9,30 +9,31 @@ form.addEventListener(`submit`, searchRequest);
 
 
 function searchRequest(evt) {
-    // evt.preventDefault();
+    evt.preventDefault();
+    list.innerHTML = `<span class="loader"></span>`;
     const characteristics = evt.currentTarget.elements.search.value;
     getRequest(characteristics)
-        .then(data => (list.innerHTML = createMarkup(data.hits)))
+        .then(data => {
+            if (data.hits.length === 0)
+                 { iziToast.show({
+                    message: '❌ Sorry, there are no images matching your search query. Please try again!'
+                 });
+                list.innerHTML = ``;
+                return;}
+            list.innerHTML = createMarkup(data.hits)
+            initializeLightbox();
+        })
         .catch(err => console.log(err))
-
+    
 }
 
 function createMarkup(arr) {
-    if (arr.total === 0) {
-    iziToast.show({
-    message: '❌ Sorry, there are no images matching your search query. Please try again!'
-    });
-    }
-    else {
         return arr.map( ({webformatURL, largeImageURL, tags, likes, views, comments, downloads} ) => `
-        <li class="gallery-item">
-          <img
-            srcset='${webformatURL} 1x, ${largeImageURL} 2x'
-            src='${webformatURL}'
-            alt='${tags}'
-          />
-        </li>
-         <div class="gallery-stats">
+        <li class="gallery__item">
+          <a class="gallery__link" href="${largeImageURL}">
+            <img class="gallery__image" src="${webformatURL}" alt="${tags}" />
+          </a>
+          <ul class="gallery-stats">
             <li class="gallery-stats-item">
               <h3 class="stats-head">Likes</h3>
               <p class="stats-indicator">${likes}</p>
@@ -49,8 +50,9 @@ function createMarkup(arr) {
               <h3 class="stats-head">Downloads</h3>
               <p class="stats-indicator">${downloads}</p>
             </li>
-          </div>`).join(``)
-    }
+          </ul>
+        </li>
+   `).join(``)
 }
 
 function getRequest(characteristics) {
@@ -62,11 +64,15 @@ function getRequest(characteristics) {
             if (!resp.ok) {
             throw new Error(resp.statusText)
             }
-            console.dir(resp)
             return resp.json()
     })
 
 }
 
-
-
+function initializeLightbox() {
+    const instance = new SimpleLightbox('.gallery a', {
+        captionsDelay: 250,
+        captionPosition: "bottom",
+    });
+    instance.refresh();
+}
